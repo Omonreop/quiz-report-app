@@ -1,18 +1,12 @@
-import { prisma } from "@/lib/prisma";
-import { errorResponse, successResponse } from "@/lib/api-response";
-import { formatPublicQuiz, publicQuizInclude } from "@/lib/quiz";
+import { getPublicQuiz } from "@/server/quiz";
+import { errorResponse, successResponse } from "@/libs/api-response";
 
 export async function GET() {
-  const quiz = await prisma.quiz.findFirst({
-    where: {
-      slug: "general-knowledge",
-    },
-    include: publicQuizInclude,
-  });
+  const quiz = await getPublicQuiz();
 
   if (!quiz) {
     return errorResponse({ message: "Quiz not found", status: 404 });
   }
 
-  return successResponse(formatPublicQuiz(quiz));
+  return successResponse(quiz);
 }

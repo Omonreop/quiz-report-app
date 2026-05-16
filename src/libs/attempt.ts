@@ -9,7 +9,7 @@ export const attemptSummaryInclude = {
 } satisfies Prisma.AttemptInclude;
 
 export const attemptDetailInclude = {
-  participant: {
+  user: {
     select: {
       name: true,
       email: true,
@@ -76,7 +76,7 @@ export function formatAttemptSummary(attempt: AttemptSummary) {
 export function formatAttemptDetail(attempt: AttemptDetail) {
   return {
     id: attempt.id,
-    participant: attempt.participant,
+    participant: attempt.user,
     quiz: attempt.quiz,
     score: attempt.score,
     maxScore: attempt.maxScore,

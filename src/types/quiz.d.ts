@@ -56,4 +56,10 @@ export type AttemptListApiResponse = {
     performanceCategory: string;
     createdAt: string;
   }[];
+  pagination: {
+    currentPage: number;
+    currentLimit: number;
+    totalItems: number;
+    totalPages: number;
+  };
 };

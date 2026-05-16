@@ -1,45 +1,47 @@
-import { scoreQuiz } from "@/lib/scoring";
-import { prisma } from "@/lib/prisma";
-import { errorResponse, successResponse } from "@/lib/api-response";
-import { attemptSummaryInclude, formatAttemptSummary } from "@/lib/attempt";
-import { scoringQuizInclude, validateSubmittedAnswers } from "@/lib/quiz";
+import { createQuizAttempt, getAttemptSummariesByUserId } from "@/server/quiz";
+import { errorResponse, successResponse } from "@/libs/api-response";
+import { authOptions } from "@/libs/auth";
 import {
   attemptListQuerySchema,
   submitQuizSchema,
 } from "@/validations/quiz-validation";
+import { getServerSession } from "next-auth";
 import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return errorResponse({ message: "Unauthorized", status: 401 });
+  }
+
   const validatedQuery = attemptListQuerySchema.safeParse({
-    email: searchParams.get("email"),
+    page: request.nextUrl.searchParams.get("page") ?? undefined,
+    limit: request.nextUrl.searchParams.get("limit") ?? undefined,
   });
 
   if (!validatedQuery.success) {
     return errorResponse({
-      message: "Invalid query",
+      message: "Invalid attempt query",
       errors: validatedQuery.error.flatten().fieldErrors,
     });
   }
 
-  const attempts = await prisma.attempt.findMany({
-    where: {
-      participant: {
-        email: validatedQuery.data.email,
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    include: attemptSummaryInclude,
+  const result = await getAttemptSummariesByUserId({
+    userId: session.user.id,
+    ...validatedQuery.data,
   });
 
-  return successResponse({
-    attempts: attempts.map(formatAttemptSummary),
-  });
+  return successResponse(result);
 }
 
 export async function POST(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return errorResponse({ message: "Unauthorized", status: 401 });
+  }
+
   const body = await request.json();
   const validatedBody = submitQuizSchema.safeParse(body);
 
@@ -50,70 +52,17 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  const { name, email, quizId, answers } = validatedBody.data;
-  const quiz = await prisma.quiz.findUnique({
-    where: {
-      id: quizId,
-    },
-    include: scoringQuizInclude,
+  const result = await createQuizAttempt({
+    ...validatedBody.data,
+    userId: session.user.id,
   });
 
-  if (!quiz) {
-    return errorResponse({ message: "Quiz not found", status: 404 });
+  if (result.status === "error") {
+    return errorResponse({
+      message: result.message,
+      status: result.statusCode,
+    });
   }
 
-  const answerError = validateSubmittedAnswers({
-    answers,
-    questions: quiz.questions,
-  });
-
-  if (answerError) {
-    return errorResponse({ message: answerError });
-  }
-
-  const result = scoreQuiz({
-    answers,
-    questions: quiz.questions,
-  });
-
-  const attempt = await prisma.$transaction(async (tx) => {
-    const participant = await tx.participant.upsert({
-      where: {
-        email,
-      },
-      update: {
-        name,
-      },
-      create: {
-        name,
-        email,
-      },
-    });
-
-    return tx.attempt.create({
-      data: {
-        participantId: participant.id,
-        quizId,
-        score: result.score,
-        maxScore: result.maxScore,
-        percentage: result.percentage,
-        correctCount: result.correctCount,
-        incorrectCount: result.incorrectCount,
-        performanceCategory: result.performanceCategory,
-        answers: {
-          create: result.scoredAnswers.map((answer) => ({
-            questionId: answer.questionId,
-            selectedOptionId: answer.selectedOptionId,
-            isCorrect: answer.isCorrect,
-            pointsEarned: answer.pointsEarned,
-          })),
-        },
-      },
-      select: {
-        id: true,
-      },
-    });
-  });
-
-  return successResponse({ attemptId: attempt.id }, 201);
+  return successResponse(result.data, 201);
 }

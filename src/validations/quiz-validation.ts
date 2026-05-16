@@ -10,15 +10,17 @@ export const quizAnswerSchema = z.object({
   selectedOptionId: z.string().min(1, "Answer is required"),
 });
 
-export const submitQuizSchema = participantSchema.extend({
+export const submitQuizSchema = z.object({
   quizId: z.string().min(1, "Quiz is required"),
   answers: z.array(quizAnswerSchema).min(1, "At least one answer is required"),
 });
 
 export const attemptListQuerySchema = z.object({
-  email: z.string().trim().email("Email must be valid"),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(10),
 });
 
 export type ParticipantForm = z.infer<typeof participantSchema>;
 export type QuizAnswer = z.infer<typeof quizAnswerSchema>;
 export type SubmitQuizPayload = z.infer<typeof submitQuizSchema>;
+export type AttemptListQuery = z.infer<typeof attemptListQuerySchema>;
