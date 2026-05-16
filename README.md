@@ -1,36 +1,121 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Quiz Report App
 
-## Getting Started
+A full-stack quiz and report application built with Next.js, PostgreSQL, and Prisma.
 
-First, run the development server:
+## Tech Stack
+
+- Next.js App Router
+- TypeScript
+- PostgreSQL
+- Prisma ORM
+- Tailwind CSS
+- shadcn/ui-style components
+
+## Prerequisites
+
+Make sure these tools are installed before running the project:
+
+- Node.js
+- npm
+- PostgreSQL
+
+PostgreSQL can be installed locally or run through tools such as DBngin, Docker, Supabase, or Neon. The app only needs a valid PostgreSQL connection string.
+
+## Installation
+
+Clone the repository and install dependencies:
+
+```bash
+npm install
+```
+
+Create an environment file:
+
+```bash
+cp env.example .env
+```
+
+Update the environment values inside `.env`. The required variable is documented in `env.example`.
+
+The application expects a PostgreSQL connection string through:
+
+```env
+DATABASE_URL=""
+```
+
+Create a PostgreSQL database for the application, then point `DATABASE_URL` to that database. The database name used during development is:
+
+```txt
+quiz_report_app
+```
+
+Then run the database setup:
+
+```bash
+npm run db:setup
+```
+
+This command will:
+
+- generate the Prisma Client
+- run database migrations
+- seed the initial quiz data
+
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open the app at:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```txt
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Database Commands
 
-## Learn More
+```bash
+npm run db:generate
+```
 
-To learn more about Next.js, take a look at the following resources:
+Generate Prisma Client.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run db:migrate
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Run Prisma migrations.
 
-## Deploy on Vercel
+```bash
+npm run db:seed
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Seed the initial quiz data.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run db:setup
+```
+
+Run generate, migrate, and seed in one command.
+
+```bash
+npm run db:studio
+```
+
+Open Prisma Studio to inspect database records.
+
+## Useful Commands
+
+```bash
+npm run lint
+npm run build
+```
+
+Use these commands to verify code quality and production build readiness.
+
+## Notes
+
+- `.env` is intentionally ignored and should not be committed.
+- `env.example` is committed so reviewers can see the required environment variables.
+- The initial seed creates a General Knowledge quiz with 10 questions and multiple-choice answers.
