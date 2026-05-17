@@ -8,35 +8,16 @@ import {
   Circle,
   Path,
 } from "@react-pdf/renderer";
+import {
+  formatCategoryLabel,
+  formatReportDate,
+  formatReportDateTime,
+} from "@/lib/format";
 import { AttemptApiResponse } from "@/types/quiz";
 
 type AttemptReportDocumentProps = {
   attempt: AttemptApiResponse;
 };
-
-function formatCategory(category: string) {
-  return category
-    .toLowerCase()
-    .replace(/^\w/, (letter) => letter.toUpperCase());
-}
-
-function formatDate(date: string) {
-  return new Date(date).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function formatDateTime(date: string) {
-  return new Date(date).toLocaleString("en-US", {
-    month: "numeric",
-    day: "numeric",
-    year: "2-digit",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
 
 function polarToCartesian(
   centerX: number,
@@ -95,7 +76,7 @@ export default function AttemptReportDocument({
       <Page size="A4" style={styles.page}>
         <BrowserHeaderFooter
           title={reportTitle}
-          date={formatDateTime(attempt.createdAt)}
+          date={formatReportDateTime(attempt.createdAt)}
         />
 
         <ScoreSummary attempt={attempt} />
@@ -108,7 +89,7 @@ export default function AttemptReportDocument({
       <Page size="A4" style={styles.page}>
         <BrowserHeaderFooter
           title={reportTitle}
-          date={formatDateTime(attempt.createdAt)}
+          date={formatReportDateTime(attempt.createdAt)}
         />
 
         <QuestionBreakdown
@@ -150,7 +131,7 @@ function ScoreSummary({ attempt }: AttemptReportDocumentProps) {
 
       <View style={styles.heroContent}>
         <Text style={styles.performanceCategory}>
-          {formatCategory(attempt.performanceCategory)}
+          {formatCategoryLabel(attempt.performanceCategory)}
         </Text>
 
         <Text style={styles.title}>
@@ -159,7 +140,7 @@ function ScoreSummary({ attempt }: AttemptReportDocumentProps) {
 
         <Text style={styles.subtitle}>
           {attempt.quiz.title} - {attempt.answers.length} questions - Completed{" "}
-          {formatDate(attempt.createdAt)}
+          {formatReportDate(attempt.createdAt)}
         </Text>
       </View>
     </View>
@@ -303,7 +284,7 @@ function CategoryChart({ attempt }: AttemptReportDocumentProps) {
                   </View>
 
                   <Text style={styles.categoryName}>
-                    {formatCategory(category.category)}
+                    {formatCategoryLabel(category.category)}
                   </Text>
                 </View>
               );
@@ -343,7 +324,7 @@ function QuestionBreakdown({
             <View style={styles.questionRight}>
               <View style={styles.categoryPill}>
                 <Text style={styles.categoryPillText}>
-                  {formatCategory(answer.category)}
+                  {formatCategoryLabel(answer.category)}
                 </Text>
               </View>
 

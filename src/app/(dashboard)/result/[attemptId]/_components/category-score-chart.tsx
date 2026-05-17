@@ -6,14 +6,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { formatCategoryLabel } from "@/lib/format";
 import { AttemptApiResponse } from "@/types/quiz";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-
-function formatCategory(category: string) {
-  return category
-    .toLowerCase()
-    .replace(/^\w/, (letter) => letter.toUpperCase());
-}
 
 export default function CategoryScoreChart({
   data,
@@ -33,7 +28,7 @@ export default function CategoryScoreChart({
 
   const chartData = data.map((category) => ({
     ...category,
-    category: formatCategory(category.category),
+    category: formatCategoryLabel(category.category),
   }));
 
   const chartMax = Math.max(...data.map((category) => category.maxScore), 1);

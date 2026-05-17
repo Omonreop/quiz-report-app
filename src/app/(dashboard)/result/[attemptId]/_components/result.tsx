@@ -10,6 +10,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  formatCategoryLabel,
+  formatReportDate,
+  formatReportDateTime,
+} from "@/lib/format";
 import attemptServices from "@/services/attempt.service";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -30,30 +35,6 @@ import Link from "next/link";
 async function fetchAttempt(attemptId: string) {
   const { data } = await attemptServices.getAttemptById(attemptId);
   return data;
-}
-
-function formatCategory(category: string) {
-  return category
-    .toLowerCase()
-    .replace(/^\w/, (letter) => letter.toUpperCase());
-}
-
-function formatDate(date: string) {
-  return new Date(date).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function formatDateTime(date: string) {
-  return new Date(date).toLocaleString("en-US", {
-    month: "numeric",
-    day: "numeric",
-    year: "2-digit",
-    hour: "numeric",
-    minute: "2-digit",
-  });
 }
 
 function getPerformanceBadgeClass(category: string) {
@@ -115,7 +96,7 @@ export default function Result({ attemptId }: { attemptId: string }) {
 
         <CardHeader className="relative p-6 md:p-8">
           <div className="mb-8 flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <span>{formatDateTime(attempt.createdAt)}</span>
+            <span>{formatReportDateTime(attempt.createdAt)}</span>
             <span>Quiz Results - {attempt.participant.name}</span>
           </div>
 
@@ -132,7 +113,7 @@ export default function Result({ attemptId }: { attemptId: string }) {
                     attempt.performanceCategory,
                   )}
                 >
-                  {formatCategory(attempt.performanceCategory)}
+                  {formatCategoryLabel(attempt.performanceCategory)}
                 </Badge>
 
                 <Badge className="border border-teal-500/20 bg-teal-500/10 text-teal-700 hover:bg-teal-500/15 dark:text-teal-300">
@@ -160,14 +141,14 @@ export default function Result({ attemptId }: { attemptId: string }) {
 
                 <CardDescription className="max-w-3xl text-base leading-7">
                   {attempt.quiz.title} - {attempt.answers.length} questions -
-                  Completed {formatDate(attempt.createdAt)}
+                  Completed {formatReportDate(attempt.createdAt)}
                 </CardDescription>
               </div>
 
               <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-2 rounded-full border border-teal-500/10 bg-background/60 px-3 py-1">
                   <CalendarDays className="h-4 w-4 text-teal-700 dark:text-teal-300" />
-                  {formatDate(attempt.createdAt)}
+                  {formatReportDate(attempt.createdAt)}
                 </span>
 
                 <span className="inline-flex items-center gap-2 rounded-full border border-teal-500/10 bg-background/60 px-3 py-1">
@@ -285,7 +266,7 @@ export default function Result({ attemptId }: { attemptId: string }) {
                   </p>
 
                   <p className="text-xs text-muted-foreground sm:hidden">
-                    {formatCategory(answer.category)}
+                    {formatCategoryLabel(answer.category)}
                   </p>
                 </div>
 
@@ -293,7 +274,7 @@ export default function Result({ attemptId }: { attemptId: string }) {
                   variant="outline"
                   className="hidden w-fit border-teal-500/20 bg-teal-500/10 text-teal-700 dark:text-teal-300 sm:inline-flex"
                 >
-                  {formatCategory(answer.category)}
+                  {formatCategoryLabel(answer.category)}
                 </Badge>
 
                 {answer.isCorrect ? (

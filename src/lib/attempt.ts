@@ -1,4 +1,5 @@
 import { Prisma } from "@/generated/prisma/client";
+import { formatCategoryLabel } from "@/lib/format";
 
 export const attemptSummaryInclude = {
   quiz: {
@@ -178,21 +179,21 @@ function buildAttemptInsights({
 
   if (strongestCategory) {
     insights.push({
-      title: `Strongest area: ${formatCategory(strongestCategory.category)}`,
+      title: `Strongest area: ${formatCategoryLabel(strongestCategory.category)}`,
       description: `You scored ${strongestCategory.percentage}% here. Keep it up and use this area as your confidence base.`,
       tone: "success",
     });
   }
 
   insights.push({
-    title: `Performance tier: ${formatCategory(performanceCategory)}`,
+    title: `Performance tier: ${formatCategoryLabel(performanceCategory)}`,
     description: `Your overall accuracy is ${percentage}%, with ${correctCount} correct answers and ${incorrectCount} incorrect answers.`,
     tone: "info",
   });
 
   if (weakestCategory && weakestCategory.category !== strongestCategory?.category) {
     insights.push({
-      title: `Focus area: ${formatCategory(weakestCategory.category)}`,
+      title: `Focus area: ${formatCategoryLabel(weakestCategory.category)}`,
       description: `This category scored ${weakestCategory.percentage}%, so it is the best place to review before the next retake.`,
       tone: "danger",
     });
@@ -210,8 +211,4 @@ function buildAttemptInsights({
   });
 
   return insights;
-}
-
-function formatCategory(category: string) {
-  return category.toLowerCase().replace(/^\w/, (letter) => letter.toUpperCase());
 }

@@ -75,4 +75,26 @@ export type AttemptListApiResponse = {
     totalItems: number;
     totalPages: number;
   };
+  summary: {
+    latestAttempt: {
+      id: string;
+      quizTitle: string;
+      score: number;
+      maxScore: number;
+      percentage: number;
+      performanceCategory: string;
+      createdAt: string;
+    } | null;
+    bestAttempt: {
+      id: string;
+      quizTitle: string;
+      score: number;
+      maxScore: number;
+      percentage: number;
+      performanceCategory: string;
+      createdAt: string;
+    } | null;
+    averagePercentage: number;
+    totalAttempts: number;
+  };
 };

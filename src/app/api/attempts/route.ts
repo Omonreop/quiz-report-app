@@ -1,6 +1,7 @@
 import { createQuizAttempt, getAttemptSummariesByUserId } from "@/server/quiz";
 import { errorResponse, successResponse } from "@/lib/api-response";
 import { authOptions } from "@/lib/auth";
+import { parseJsonBody } from "@/lib/request";
 import {
   attemptListQuerySchema,
   submitQuizSchema,
@@ -42,8 +43,13 @@ export async function POST(request: NextRequest) {
     return errorResponse({ message: "Unauthorized", status: 401 });
   }
 
-  const body = await request.json();
-  const validatedBody = submitQuizSchema.safeParse(body);
+  const parsedBody = await parseJsonBody(request);
+
+  if (parsedBody.error) {
+    return errorResponse({ message: parsedBody.error, status: 400 });
+  }
+
+  const validatedBody = submitQuizSchema.safeParse(parsedBody.data);
 
   if (!validatedBody.success) {
     return errorResponse({

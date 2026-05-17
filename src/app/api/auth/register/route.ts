@@ -1,10 +1,16 @@
 import { registerUser } from "@/server/auth";
 import { errorResponse, successResponse } from "@/lib/api-response";
+import { parseJsonBody } from "@/lib/request";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const result = await registerUser(body);
+  const parsedBody = await parseJsonBody(request);
+
+  if (parsedBody.error) {
+    return errorResponse({ message: parsedBody.error, status: 400 });
+  }
+
+  const result = await registerUser(parsedBody.data);
 
   if (result.status === "error") {
     return errorResponse({

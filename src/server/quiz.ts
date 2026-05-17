@@ -54,20 +54,46 @@ export async function getAttemptSummariesByUserId({
     userId,
   };
 
-  const [attempts, totalItems] = await prisma.$transaction([
-    prisma.attempt.findMany({
-      where,
-      orderBy: {
-        createdAt: "desc",
-      },
-      skip: (page - 1) * limit,
-      take: limit,
-      include: attemptSummaryInclude,
-    }),
-    prisma.attempt.count({
-      where,
-    }),
-  ]);
+  const [attempts, totalItems, latestAttempt, bestAttempt, averageResult] =
+    await prisma.$transaction([
+      prisma.attempt.findMany({
+        where,
+        orderBy: {
+          createdAt: "desc",
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: attemptSummaryInclude,
+      }),
+      prisma.attempt.count({
+        where,
+      }),
+      prisma.attempt.findFirst({
+        where,
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: attemptSummaryInclude,
+      }),
+      prisma.attempt.findFirst({
+        where,
+        orderBy: [
+          {
+            percentage: "desc",
+          },
+          {
+            createdAt: "desc",
+          },
+        ],
+        include: attemptSummaryInclude,
+      }),
+      prisma.attempt.aggregate({
+        where,
+        _avg: {
+          percentage: true,
+        },
+      }),
+    ]);
 
   return {
     attempts: attempts.map(formatAttemptSummary),
@@ -76,6 +102,12 @@ export async function getAttemptSummariesByUserId({
       currentLimit: limit,
       totalItems,
       totalPages: Math.max(1, Math.ceil(totalItems / limit)),
+    },
+    summary: {
+      latestAttempt: latestAttempt ? formatAttemptSummary(latestAttempt) : null,
+      bestAttempt: bestAttempt ? formatAttemptSummary(bestAttempt) : null,
+      averagePercentage: Math.round(averageResult._avg.percentage ?? 0),
+      totalAttempts: totalItems,
     },
   };
 }

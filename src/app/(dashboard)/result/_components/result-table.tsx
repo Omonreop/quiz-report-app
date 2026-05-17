@@ -14,6 +14,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@/constants/data-table-constant";
 import { getErrorMessage } from "@/lib/error";
+import { formatCategoryLabel, formatTableDate } from "@/lib/format";
 import attemptServices from "@/services/attempt.service";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -34,12 +35,6 @@ async function fetchAttempts(page: number, limit: number) {
   return data;
 }
 
-function formatCategory(category: string) {
-  return category
-    .toLowerCase()
-    .replace(/^\w/, (letter) => letter.toUpperCase());
-}
-
 function getPerformanceBadgeClass(category: string) {
   const value = category.toLowerCase();
 
@@ -56,14 +51,6 @@ function getPerformanceBadgeClass(category: string) {
   }
 
   return "border-muted bg-muted text-muted-foreground";
-}
-
-function formatDate(date: string) {
-  return new Date(date).toLocaleDateString("id-ID", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
 }
 
 export default function ResultTable() {
@@ -92,27 +79,11 @@ export default function ResultTable() {
   );
 
   const totalPages = attemptsQuery.data?.pagination.totalPages ?? 1;
-
-  const latestAttempt = attempts[0];
-
-  const bestAttempt = useMemo(() => {
-    if (!attempts.length) return null;
-
-    return attempts.reduce((best, attempt) =>
-      attempt.percentage > best.percentage ? attempt : best,
-    );
-  }, [attempts]);
-
-  const averagePercentage = useMemo(() => {
-    if (!attempts.length) return 0;
-
-    const total = attempts.reduce(
-      (sum, attempt) => sum + attempt.percentage,
-      0,
-    );
-
-    return Math.round(total / attempts.length);
-  }, [attempts]);
+  const summary = attemptsQuery.data?.summary;
+  const latestAttempt = summary?.latestAttempt ?? null;
+  const bestAttempt = summary?.bestAttempt ?? null;
+  const averagePercentage = summary?.averagePercentage ?? 0;
+  const totalAttempts = summary?.totalAttempts ?? 0;
 
   const tableData = useMemo(() => {
     return attempts.map((attempt) => [
@@ -140,7 +111,7 @@ export default function ResultTable() {
         variant="outline"
         className={getPerformanceBadgeClass(attempt.performanceCategory)}
       >
-        {formatCategory(attempt.performanceCategory)}
+        {formatCategoryLabel(attempt.performanceCategory)}
       </Badge>,
 
       <div
@@ -148,7 +119,7 @@ export default function ResultTable() {
         className="flex items-center gap-2 text-muted-foreground"
       >
         <CalendarDays className="h-4 w-4" />
-        {formatDate(attempt.createdAt)}
+        {formatTableDate(attempt.createdAt)}
       </div>,
 
       <Link
@@ -236,7 +207,7 @@ export default function ResultTable() {
           <CardContent>
             <p className="text-sm text-muted-foreground">
               {latestAttempt
-                ? `${latestAttempt.score}/${latestAttempt.maxScore} on ${formatDate(
+                ? `${latestAttempt.score}/${latestAttempt.maxScore} on ${formatTableDate(
                     latestAttempt.createdAt,
                   )}`
                 : "No attempt submitted yet."}
@@ -270,7 +241,7 @@ export default function ResultTable() {
             <div>
               <CardDescription>Average score</CardDescription>
               <CardTitle className="mt-2 text-3xl">
-                {attempts.length ? `${averagePercentage}%` : "-"}
+                {totalAttempts ? `${averagePercentage}%` : "-"}
               </CardTitle>
             </div>
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-500/15 text-teal-700 dark:text-teal-300">
@@ -279,8 +250,8 @@ export default function ResultTable() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Based on {attempts.length} attempt
-              {attempts.length > 1 ? "s" : ""} shown on this page.
+              Based on {totalAttempts} attempt
+              {totalAttempts > 1 ? "s" : ""} across your history.
             </p>
           </CardContent>
         </Card>
