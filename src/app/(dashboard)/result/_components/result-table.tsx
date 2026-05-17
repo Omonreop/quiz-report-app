@@ -12,11 +12,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@/constants/data-table-constant";
 import { getErrorMessage } from "@/lib/error";
 import { formatCategoryLabel, formatTableDate } from "@/lib/format";
-import attemptServices from "@/services/attempt.service";
-import { useQuery } from "@tanstack/react-query";
 import {
   BarChart3,
   CalendarDays,
@@ -27,13 +24,8 @@ import {
   Trophy,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-
-async function fetchAttempts(page: number, limit: number) {
-  const { data } = await attemptServices.getMyAttempts({ page, limit });
-  return data;
-}
+import { useMemo } from "react";
+import useResultTable from "../_hooks/use-result-table";
 
 function getPerformanceBadgeClass(category: string) {
   const value = category.toLowerCase();
@@ -54,36 +46,23 @@ function getPerformanceBadgeClass(category: string) {
 }
 
 export default function ResultTable() {
-  const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE);
-  const [currentLimit, setCurrentLimit] = useState(DEFAULT_LIMIT);
-
-  const attemptsQuery = useQuery({
-    queryKey: ["attempts", currentPage, currentLimit],
-    queryFn: () => fetchAttempts(currentPage, currentLimit),
-  });
-
-  useEffect(() => {
-    if (!attemptsQuery.isError) return;
-
-    toast.error("Load results failed", {
-      description: getErrorMessage(
-        attemptsQuery.error,
-        "Unable to load your quiz results.",
-      ),
-    });
-  }, [attemptsQuery.error, attemptsQuery.isError]);
-
-  const attempts = useMemo(
-    () => attemptsQuery.data?.attempts ?? [],
-    [attemptsQuery.data],
-  );
-
-  const totalPages = attemptsQuery.data?.pagination.totalPages ?? 1;
-  const summary = attemptsQuery.data?.summary;
-  const latestAttempt = summary?.latestAttempt ?? null;
-  const bestAttempt = summary?.bestAttempt ?? null;
-  const averagePercentage = summary?.averagePercentage ?? 0;
-  const totalAttempts = summary?.totalAttempts ?? 0;
+  const {
+    errorAttempts,
+    isErrorAttempts,
+    isFetchingAttempts,
+    isLoadingAttempts,
+    refetchAttempts,
+    attempts,
+    currentPage,
+    currentLimit,
+    totalPages,
+    latestAttempt,
+    bestAttempt,
+    averagePercentage,
+    totalAttempts,
+    setCurrentPage,
+    handleChangeLimit,
+  } = useResultTable();
 
   const tableData = useMemo(() => {
     return attempts.map((attempt) => [
@@ -138,12 +117,12 @@ export default function ResultTable() {
     ]);
   }, [attempts]);
 
-  if (attemptsQuery.isError) {
+  if (isErrorAttempts) {
     return (
       <StateCard
         title="Failed to load results"
         description={getErrorMessage(
-          attemptsQuery.error,
+          errorAttempts,
           "Unable to load your quiz results.",
         )}
       />
@@ -176,11 +155,11 @@ export default function ResultTable() {
 
             <Button
               variant="outline"
-              onClick={() => attemptsQuery.refetch()}
-              disabled={attemptsQuery.isFetching}
+              onClick={() => refetchAttempts()}
+              disabled={isFetchingAttempts}
               className="w-fit border-teal-500/20 hover:bg-teal-500/10 hover:text-teal-700 dark:hover:text-teal-300"
             >
-              {attemptsQuery.isFetching ? (
+              {isFetchingAttempts ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <RefreshCcw className="mr-2 h-4 w-4" />
@@ -277,15 +256,12 @@ export default function ResultTable() {
           <DataTable
             header={["Quiz", "Score", "Performance", "Date", "Action"]}
             data={tableData}
-            isLoading={attemptsQuery.isLoading}
+            isLoading={isLoadingAttempts}
             totalPages={totalPages}
             currentPage={currentPage}
             currentLimit={currentLimit}
             onChangePage={setCurrentPage}
-            onChangeLimit={(limit) => {
-              setCurrentLimit(limit);
-              setCurrentPage(DEFAULT_PAGE);
-            }}
+            onChangeLimit={handleChangeLimit}
           />
         </CardContent>
       </Card>

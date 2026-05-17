@@ -15,8 +15,6 @@ import {
   formatReportDate,
   formatReportDateTime,
 } from "@/lib/format";
-import attemptServices from "@/services/attempt.service";
-import { useQuery } from "@tanstack/react-query";
 import {
   BarChart3,
   CalendarDays,
@@ -31,11 +29,7 @@ import {
 import CategoryScoreChart from "./category-score-chart";
 import ScoreRadialChart from "./score-radial-chart";
 import Link from "next/link";
-
-async function fetchAttempt(attemptId: string) {
-  const { data } = await attemptServices.getAttemptById(attemptId);
-  return data;
-}
+import useResult from "../_hooks/use-result";
 
 function getPerformanceBadgeClass(category: string) {
   const value = category.toLowerCase();
@@ -68,16 +62,14 @@ function InsightIcon({ tone }: { tone: string }) {
 }
 
 export default function Result({ attemptId }: { attemptId: string }) {
-  const attemptQuery = useQuery({
-    queryKey: ["attempt", attemptId],
-    queryFn: () => fetchAttempt(attemptId),
-  });
+  const { dataAttempt, isLoadingAttempt, isErrorAttempt } =
+    useResult(attemptId);
 
-  if (attemptQuery.isLoading) {
+  if (isLoadingAttempt) {
     return <StateCard isLoading />;
   }
 
-  if (attemptQuery.isError || !attemptQuery.data) {
+  if (isErrorAttempt || !dataAttempt) {
     return (
       <StateCard
         title="Failed to load result"
@@ -85,8 +77,6 @@ export default function Result({ attemptId }: { attemptId: string }) {
       />
     );
   }
-
-  const attempt = attemptQuery.data;
 
   return (
     <article className="space-y-6 [--chart-maximum:var(--muted-foreground)] [--chart-score:oklch(0.72_0.17_155)]">
@@ -96,13 +86,13 @@ export default function Result({ attemptId }: { attemptId: string }) {
 
         <CardHeader className="relative p-6 md:p-8">
           <div className="mb-8 flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <span>{formatReportDateTime(attempt.createdAt)}</span>
-            <span>Quiz Results - {attempt.participant.name}</span>
+            <span>{formatReportDateTime(dataAttempt.createdAt)}</span>
+            <span>Quiz Results - {dataAttempt.participant.name}</span>
           </div>
 
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center">
             <div className="flex justify-center lg:w-55 lg:justify-start">
-              <ScoreRadialChart percentage={attempt.percentage} />
+              <ScoreRadialChart percentage={dataAttempt.percentage} />
             </div>
 
             <div className="min-w-0 flex-1 space-y-4">
@@ -110,10 +100,10 @@ export default function Result({ attemptId }: { attemptId: string }) {
                 <Badge
                   variant="outline"
                   className={getPerformanceBadgeClass(
-                    attempt.performanceCategory,
+                    dataAttempt.performanceCategory,
                   )}
                 >
-                  {formatCategoryLabel(attempt.performanceCategory)}
+                  {formatCategoryLabel(dataAttempt.performanceCategory)}
                 </Badge>
 
                 <Badge className="border border-teal-500/20 bg-teal-500/10 text-teal-700 hover:bg-teal-500/15 dark:text-teal-300">
@@ -121,7 +111,7 @@ export default function Result({ attemptId }: { attemptId: string }) {
                 </Badge>
 
                 <Link
-                  href={`/api/attempts/${attempt.id}/pdf`}
+                  href={`/api/attempts/${dataAttempt.id}/pdf`}
                   className={buttonVariants({
                     variant: "outline",
                     size: "sm",
@@ -136,24 +126,24 @@ export default function Result({ attemptId }: { attemptId: string }) {
 
               <div className="space-y-3">
                 <CardTitle className="text-3xl font-bold tracking-tight md:text-5xl">
-                  {attempt.participant.name} - Quiz Results
+                  {dataAttempt.participant.name} - Quiz Results
                 </CardTitle>
 
                 <CardDescription className="max-w-3xl text-base leading-7">
-                  {attempt.quiz.title} - {attempt.answers.length} questions -
-                  Completed {formatReportDate(attempt.createdAt)}
+                  {dataAttempt.quiz.title} - {dataAttempt.answers.length}{" "}
+                  questions - Completed {formatReportDate(dataAttempt.createdAt)}
                 </CardDescription>
               </div>
 
               <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-2 rounded-full border border-teal-500/10 bg-background/60 px-3 py-1">
                   <CalendarDays className="h-4 w-4 text-teal-700 dark:text-teal-300" />
-                  {formatReportDate(attempt.createdAt)}
+                  {formatReportDate(dataAttempt.createdAt)}
                 </span>
 
                 <span className="inline-flex items-center gap-2 rounded-full border border-teal-500/10 bg-background/60 px-3 py-1">
                   <ClipboardList className="h-4 w-4 text-teal-700 dark:text-teal-300" />
-                  {attempt.quiz.title}
+                  {dataAttempt.quiz.title}
                 </span>
               </div>
             </div>
@@ -167,7 +157,7 @@ export default function Result({ attemptId }: { attemptId: string }) {
             <div>
               <CardDescription>Total score</CardDescription>
               <CardTitle className="mt-2 text-3xl">
-                {attempt.score} / {attempt.maxScore}
+                {dataAttempt.score} / {dataAttempt.maxScore}
               </CardTitle>
             </div>
 
@@ -182,7 +172,7 @@ export default function Result({ attemptId }: { attemptId: string }) {
             <div>
               <CardDescription>Correct</CardDescription>
               <CardTitle className="mt-2 text-3xl text-emerald-400">
-                {attempt.correctCount} / {attempt.answers.length}
+                {dataAttempt.correctCount} / {dataAttempt.answers.length}
               </CardTitle>
             </div>
 
@@ -197,7 +187,7 @@ export default function Result({ attemptId }: { attemptId: string }) {
             <div>
               <CardDescription>Incorrect</CardDescription>
               <CardTitle className="mt-2 text-3xl text-red-400">
-                {attempt.incorrectCount} / {attempt.answers.length}
+                {dataAttempt.incorrectCount} / {dataAttempt.answers.length}
               </CardTitle>
             </div>
 
@@ -237,7 +227,7 @@ export default function Result({ attemptId }: { attemptId: string }) {
         </CardHeader>
 
         <CardContent>
-          <CategoryScoreChart data={attempt.categoryBreakdown} />
+          <CategoryScoreChart data={dataAttempt.categoryBreakdown} />
         </CardContent>
       </Card>
 
@@ -251,7 +241,7 @@ export default function Result({ attemptId }: { attemptId: string }) {
 
         <CardContent>
           <div className="grid gap-3">
-            {attempt.answers.map((answer, index) => (
+            {dataAttempt.answers.map((answer, index) => (
               <div
                 key={answer.questionId}
                 className="grid gap-3 rounded-2xl border border-teal-500/10 bg-background/50 p-4 transition hover:border-teal-500/30 sm:grid-cols-[2.5rem_1fr_auto_auto] sm:items-center"
@@ -302,7 +292,7 @@ export default function Result({ attemptId }: { attemptId: string }) {
 
         <CardContent>
           <div className="grid gap-3 md:grid-cols-2">
-            {attempt.insights.map((insight) => (
+            {dataAttempt.insights.map((insight) => (
               <div
                 key={insight.title}
                 className="flex gap-4 rounded-2xl border border-teal-500/10 bg-background/50 p-4"

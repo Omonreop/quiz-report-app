@@ -1,11 +1,6 @@
 import z from "zod";
 
-export const participantSchema = z.object({
-  name: z.string().trim().min(1, "Name is required"),
-  email: z.string().trim().email("Email must be valid"),
-});
-
-export const quizAnswerSchema = z.object({
+const quizAnswerSchema = z.object({
   questionId: z.string().min(1, "Question is required"),
   selectedOptionId: z.string().min(1, "Answer is required"),
 });
@@ -20,7 +15,5 @@ export const attemptListQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(10),
 });
 
-export type ParticipantForm = z.infer<typeof participantSchema>;
-export type QuizAnswer = z.infer<typeof quizAnswerSchema>;
 export type SubmitQuizPayload = z.infer<typeof submitQuizSchema>;
 export type AttemptListQuery = z.infer<typeof attemptListQuerySchema>;

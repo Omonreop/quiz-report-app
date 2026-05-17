@@ -10,56 +10,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FieldGroup } from "@/components/ui/field";
-import { getErrorMessage } from "@/lib/error";
-import authServices from "@/services/auth.service";
-import { RegisterPayload, registerSchema } from "@/validations/auth-validation";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
 import { Loader } from "lucide-react";
-import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import useRegister from "../_hooks/use-register";
 
 export default function Register() {
-  const router = useRouter();
-  const form = useForm<RegisterPayload>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
-  });
+  const { control, handleSubmitForm, handleRegister, isPendingRegister } =
+    useRegister();
 
-  const registerMutation = useMutation({
-    mutationFn: async (payload: RegisterPayload) => {
-      await authServices.register(payload);
-      await signIn("credentials", {
-        email: payload.email,
-        password: payload.password,
-        redirect: false,
-      });
-    },
-    onSuccess: () => {
-      router.push("/dashboard");
-      router.refresh();
-    },
-    onError: (error) => {
-      toast.error("Register failed", {
-        description: getErrorMessage(
-          error.message,
-          "Unable to register. Please try again.",
-        ),
-      });
-    },
-  });
-
-  const onSubmit = (payload: RegisterPayload) => {
-    registerMutation.mutate(payload);
-  };
   return (
     <Card>
       <CardHeader className="text-center">
@@ -69,29 +27,29 @@ export default function Register() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmitForm(handleRegister)}>
           <FieldGroup>
-            <FormInput control={form.control} name="name" label="Name" />
+            <FormInput control={control} name="name" label="Name" />
             <FormInput
-              control={form.control}
+              control={control}
               name="email"
               label="Email"
               type="email"
             />
             <FormInput
-              control={form.control}
+              control={control}
               name="password"
               label="Password"
               type="password"
             />
             <FormInput
-              control={form.control}
+              control={control}
               name="confirmPassword"
               label="Confirm password"
               type="password"
             />
-            <Button type="submit" disabled={registerMutation.isPending}>
-              {registerMutation.isPending ? (
+            <Button type="submit" disabled={isPendingRegister}>
+              {isPendingRegister ? (
                 <Loader className="animate-spin" />
               ) : (
                 "Register"
