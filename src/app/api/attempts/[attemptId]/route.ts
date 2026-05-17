@@ -1,6 +1,6 @@
 import { getAttemptDetail } from "@/server/quiz";
-import { errorResponse, successResponse } from "@/libs/api-response";
-import { authOptions } from "@/libs/auth";
+import { errorResponse, successResponse } from "@/lib/api-response";
+import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { NextRequest } from "next/server";
 

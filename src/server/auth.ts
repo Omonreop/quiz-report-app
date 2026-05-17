@@ -1,4 +1,4 @@
-import { prisma } from "@/libs/prisma";
+import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/validations/auth-validation";
 import bcrypt from "bcryptjs";
 

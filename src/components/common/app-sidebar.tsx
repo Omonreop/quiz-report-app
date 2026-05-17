@@ -23,26 +23,21 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { SIDEBAR_MENU_LIST } from "@/constants/sidebar-constant";
+import { cn } from "@/lib/utils";
 import { BookOpenCheck, EllipsisVertical, LogOut } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
-
-type AppSidebarProps = {
-  user: {
-    name?: string | null;
-    email?: string | null;
-  };
-};
 
 function getInitial(name?: string | null, email?: string | null) {
   return (name?.[0] ?? email?.[0] ?? "U").toUpperCase();
 }
 
-export default function AppSidebar({ user }: AppSidebarProps) {
+export default function AppSidebar() {
+  const { data: session } = useSession();
   const { isMobile } = useSidebar();
   const pathname = usePathname();
-  const userName = user.name ?? "User";
-  const userEmail = user.email ?? "";
+  const userName = session?.user?.name ?? "User";
+  const userEmail = session?.user?.email ?? "";
 
   return (
     <Sidebar collapsible="icon">
@@ -53,10 +48,10 @@ export default function AppSidebar({ user }: AppSidebarProps) {
               size="lg"
               render={
                 <div className="font-semibold">
-                  <div className="flex p-2 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                  <div className="bg-teal-500 flex p-2 items-center justify-center rounded-md ">
                     <BookOpenCheck className="size-4" />
                   </div>
-                  Quiz
+                  Quiz App
                 </div>
               }
             />
@@ -67,28 +62,25 @@ export default function AppSidebar({ user }: AppSidebarProps) {
         <SidebarGroup>
           <SidebarGroupContent className="flex flex-col gap-2">
             <SidebarMenu>
-              {SIDEBAR_MENU_LIST.map((item) => {
-                const isActive = item.activePaths.some((path) =>
-                  path === "/dashboard"
-                    ? pathname === path
-                    : pathname.startsWith(path),
-                );
-
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      isActive={isActive}
-                      tooltip={item.title}
-                      render={
-                        <a href={item.url} className="h-auto px-4 py-3">
-                          <item.icon />
-                          <span>{item.title}</span>
-                        </a>
-                      }
-                    />
-                  </SidebarMenuItem>
-                );
-              })}
+              {SIDEBAR_MENU_LIST.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    tooltip={item.title}
+                    render={
+                      <a
+                        href={item.url}
+                        className={cn("px-4 py-3 h-auto", {
+                          "bg-teal-500 text-white hover:bg-teal-500":
+                            pathname === item.url,
+                        })}
+                      >
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </a>
+                    }
+                  />
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -101,7 +93,7 @@ export default function AppSidebar({ user }: AppSidebarProps) {
                 render={
                   <SidebarMenuButton
                     size="lg"
-                    className="h-auto data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground"
+                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                   >
                     <Avatar className="size-8 rounded-lg">
                       <AvatarFallback className="rounded-lg">

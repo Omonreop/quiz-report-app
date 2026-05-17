@@ -1,18 +1,11 @@
 "use client";
 
-import { buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import StateCard from "@/components/common/state-card";
 import attemptServices from "@/services/attempt.service";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Loader2, XCircle } from "lucide-react";
-import Link from "next/link";
+import { CheckCircle2, Target, Trophy, Waves, XCircle } from "lucide-react";
+import CategoryScoreChart from "./category-score-chart";
+import ScoreRadialChart from "./score-radial-chart";
 
 async function fetchAttempt(attemptId: string) {
   const { data } = await attemptServices.getAttemptById(attemptId);
@@ -20,7 +13,33 @@ async function fetchAttempt(attemptId: string) {
 }
 
 function formatCategory(category: string) {
-  return category.toLowerCase().replace(/^\w/, (letter) => letter.toUpperCase());
+  return category
+    .toLowerCase()
+    .replace(/^\w/, (letter) => letter.toUpperCase());
+}
+
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatDateTime(date: string) {
+  return new Date(date).toLocaleString("en-US", {
+    month: "numeric",
+    day: "numeric",
+    year: "2-digit",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function InsightIcon({ tone }: { tone: string }) {
+  if (tone === "success") return <Trophy className="size-5 text-amber-600" />;
+  if (tone === "danger") return <Target className="size-5 text-red-600" />;
+  return <Waves className="size-5 text-blue-600" />;
 }
 
 export default function Result({ attemptId }: { attemptId: string }) {
@@ -30,136 +49,133 @@ export default function Result({ attemptId }: { attemptId: string }) {
   });
 
   if (attemptQuery.isLoading) {
-    return (
-      <Card>
-        <CardContent className="flex min-h-60 items-center justify-center">
-          <Loader2 className="size-5 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
-    );
+    return <StateCard isLoading />;
   }
 
   if (attemptQuery.isError || !attemptQuery.data) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Failed to load result</CardTitle>
-          <CardDescription>
-            The attempt may not exist or the database is unavailable.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <StateCard
+        title="Failed to load result"
+        description="The attempt may not exist or the database is unavailable."
+      />
     );
   }
 
   const attempt = attemptQuery.data;
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <CardDescription>{attempt.quiz.title}</CardDescription>
-              <CardTitle className="mt-1 text-3xl">
-                {attempt.participant.name} - Quiz Results
-              </CardTitle>
-              <CardDescription className="mt-2">
-                Completed {new Date(attempt.createdAt).toLocaleDateString()}
-              </CardDescription>
-            </div>
-            <div className="rounded-lg bg-primary px-4 py-3 text-primary-foreground">
-              <p className="text-sm opacity-80">Performance</p>
-              <p className="text-2xl font-semibold">
-                {formatCategory(attempt.performanceCategory)}
-              </p>
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
+    <article className="[--chart-maximum:var(--muted-foreground)] [--chart-score:oklch(0.62_0.17_155)] dark:[--chart-maximum:oklch(0.55_0_0)] dark:[--chart-score:oklch(0.72_0.17_155)] mx-auto w-full max-w-5xl rounded-lg bg-card px-5 py-5 text-card-foreground shadow-sm ring-1 ring-border md:px-8">
+      <header className="mb-20 flex items-center justify-between text-xs font-medium text-foreground">
+        <span>{formatDateTime(attempt.createdAt)}</span>
+        <span>Quiz Results - {attempt.participant.name}</span>
+      </header>
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        {[
-          ["Total score", `${attempt.score}/${attempt.maxScore}`],
-          ["Correct", attempt.correctCount],
-          ["Incorrect", attempt.incorrectCount],
-        ].map(([label, value]) => (
-          <Card key={label}>
-            <CardHeader>
-              <CardDescription>{label}</CardDescription>
-              <CardTitle className="text-3xl">{value}</CardTitle>
-            </CardHeader>
-          </Card>
-        ))}
+      <section className="mb-16 flex flex-col gap-8 md:flex-row md:items-center">
+        <ScoreRadialChart percentage={attempt.percentage} />
+
+        <div className="min-w-0 flex-1">
+          <p className="mb-2 text-sm font-bold text-amber-800">
+            {formatCategory(attempt.performanceCategory)}
+          </p>
+          <h1 className="text-3xl font-semibold tracking-normal">
+            {attempt.participant.name} - Quiz Results
+          </h1>
+          <p className="mt-2 text-base text-muted-foreground">
+            {attempt.quiz.title} • {attempt.answers.length} questions •
+            Completed {formatDate(attempt.createdAt)}
+          </p>
+        </div>
       </section>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Score percentage</CardTitle>
-            <span className="text-sm font-semibold">{attempt.percentage}%</span>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="h-3 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-primary"
-              style={{ width: `${attempt.percentage}%` }}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <section className="mb-11 grid gap-8 sm:grid-cols-3">
+        <div>
+          <p className="mb-2 text-sm text-muted-foreground">Total score</p>
+          <p className="text-3xl font-semibold">
+            {attempt.score} / {attempt.maxScore}
+          </p>
+        </div>
+        <div>
+          <p className="mb-2 text-sm text-muted-foreground">Correct</p>
+          <p className="text-3xl font-semibold text-emerald-700 dark:text-emerald-400">
+            {attempt.correctCount} / {attempt.answers.length}
+          </p>
+        </div>
+        <div>
+          <p className="mb-2 text-sm text-muted-foreground">Incorrect</p>
+          <p className="text-3xl font-semibold text-red-700 dark:text-red-400">
+            {attempt.incorrectCount} / {attempt.answers.length}
+          </p>
+        </div>
+      </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Per-question breakdown</CardTitle>
-          <CardDescription>
-            Review selected answers and correct answers.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-3">
+      <section className="mb-12">
+        <div className="mb-4">
+          <h2 className="text-base font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Score by category
+          </h2>
+          <div className="mt-3 ml-10 flex gap-8 text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-2">
+              <span className="size-3 rounded-sm bg-(--chart-score)" />
+              Score
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <span className="size-3 rounded-sm bg-(--chart-maximum)" />
+              Max possible
+            </span>
+          </div>
+        </div>
+
+        <CategoryScoreChart data={attempt.categoryBreakdown} />
+      </section>
+
+      <section className="mb-12">
+        <h2 className="mb-4 text-base font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          Per-question breakdown
+        </h2>
+        <div className="grid gap-2">
           {attempt.answers.map((answer, index) => (
-            <div key={answer.questionId} className="rounded-lg border p-4">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <p className="text-sm font-medium">
-                    <span className="mr-2 text-muted-foreground">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    {answer.question}
-                  </p>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Selected: {answer.selectedAnswer}
-                  </p>
-                  {!answer.isCorrect ? (
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Correct: {answer.correctAnswer}
-                    </p>
-                  ) : null}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="rounded-lg bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
-                    {answer.category}
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-lg bg-muted px-2 py-1 text-xs font-semibold">
-                    {answer.isCorrect ? (
-                      <CheckCircle2 className="size-3 text-emerald-600" />
-                    ) : (
-                      <XCircle className="size-3 text-destructive" />
-                    )}
-                    {answer.isCorrect ? "Correct" : "Incorrect"}
-                  </span>
-                </div>
-              </div>
+            <div
+              key={answer.questionId}
+              className="grid min-h-12 grid-cols-[2rem_1fr_auto_1.5rem] items-center gap-4 rounded-lg border px-4 py-2"
+            >
+              <span className="text-base font-medium text-muted-foreground">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <p className="text-sm font-semibold">{answer.question}</p>
+              <span className="rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground">
+                {formatCategory(answer.category)}
+              </span>
+              {answer.isCorrect ? (
+                <CheckCircle2 className="size-4 text-emerald-700 dark:text-emerald-400" />
+              ) : (
+                <XCircle className="size-4 text-red-700 dark:text-red-400" />
+              )}
             </div>
           ))}
-        </CardContent>
-        <CardFooter className="justify-end">
-          <Link href="/dashboard/quiz" className={buttonVariants()}>
-            Retake quiz
-          </Link>
-        </CardFooter>
-      </Card>
-    </>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="mb-4 text-base font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          Insights
+        </h2>
+        <div className="grid gap-3">
+          {attempt.insights.map((insight) => (
+            <div
+              key={insight.title}
+              className="flex min-h-20 gap-4 rounded-lg border px-4 py-4"
+            >
+              <InsightIcon tone={insight.tone} />
+              <p className="text-sm leading-6 text-muted-foreground">
+                <span className="font-semibold text-foreground">
+                  {insight.title}.
+                </span>{" "}
+                {insight.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </article>
   );
 }

@@ -1,6 +1,6 @@
 import { createQuizAttempt, getAttemptSummariesByUserId } from "@/server/quiz";
-import { errorResponse, successResponse } from "@/libs/api-response";
-import { authOptions } from "@/libs/auth";
+import { errorResponse, successResponse } from "@/lib/api-response";
+import { authOptions } from "@/lib/auth";
 import {
   attemptListQuerySchema,
   submitQuizSchema,

@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { cn } from "@/libs/utils";
+import { cn } from "@/lib/utils";
 import { ArrowRight, BarChart3, Database, FileText } from "lucide-react";
 import Link from "next/link";
 

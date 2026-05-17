@@ -1,17 +1,17 @@
-import { prisma } from "@/libs/prisma";
-import { scoreQuiz } from "@/libs/scoring";
+import { prisma } from "@/lib/prisma";
+import { scoreQuiz } from "@/lib/scoring";
 import {
   attemptDetailInclude,
   attemptSummaryInclude,
   formatAttemptDetail,
   formatAttemptSummary,
-} from "@/libs/attempt";
+} from "@/lib/attempt";
 import {
   formatPublicQuiz,
   publicQuizInclude,
   scoringQuizInclude,
   validateSubmittedAnswers,
-} from "@/libs/quiz";
+} from "@/lib/quiz";
 import { SubmitQuizPayload } from "@/validations/quiz-validation";
 
 export async function getPublicQuiz() {

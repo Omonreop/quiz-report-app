@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import { ReactQueryProvider } from "@/providers/react-query-provider";
 import { SessionProvider } from "@/providers/session-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               <TooltipProvider>{children}</TooltipProvider>
+              <Toaster />
             </ThemeProvider>
           </ReactQueryProvider>
         </SessionProvider>

@@ -1,4 +1,4 @@
-import { prisma } from "@/libs/prisma";
+import { prisma } from "@/lib/prisma";
 import { loginSchema } from "@/validations/auth-validation";
 import bcrypt from "bcryptjs";
 import { NextAuthOptions } from "next-auth";

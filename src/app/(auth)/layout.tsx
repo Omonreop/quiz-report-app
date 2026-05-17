@@ -12,8 +12,8 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         <ModeToggle />
       </div>
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <div className="flex items-center gap-2 self-center text-2xl font-medium">
-          <div className="bg-blue-500 flex p-2 items-center justify-center rounded-full">
+        <div className="flex items-center gap-2 self-center text-3xl font-semibold">
+          <div className="bg-teal-500 flex p-2 items-center justify-center rounded-full">
             <BadgeQuestionMark className="size-6" />
           </div>
           Quiz App

@@ -1,19 +1,16 @@
 "use client";
 
 import DataTable from "@/components/common/data-table";
+import PageHeaderCard from "@/components/common/page-header-card";
+import StateCard from "@/components/common/state-card";
 import { buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@/constants/data-table-constant";
-import { onErrorHandler } from "@/libs/axios/response-handler";
+import { getErrorMessage } from "@/lib/error";
 import attemptServices from "@/services/attempt.service";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 async function fetchAttempts(page: number, limit: number) {
   const { data } = await attemptServices.getMyAttempts({ page, limit });
@@ -33,6 +30,17 @@ export default function ResultTable() {
     queryKey: ["attempts", currentPage, currentLimit],
     queryFn: () => fetchAttempts(currentPage, currentLimit),
   });
+
+  useEffect(() => {
+    if (!attemptsQuery.isError) return;
+
+    toast.error("Load results failed", {
+      description: getErrorMessage(
+        attemptsQuery.error,
+        "Unable to load your quiz results.",
+      ),
+    });
+  }, [attemptsQuery.error, attemptsQuery.isError]);
 
   const attempts = useMemo(
     () => attemptsQuery.data?.attempts ?? [],
@@ -60,27 +68,22 @@ export default function ResultTable() {
 
   if (attemptsQuery.isError) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Failed to load results</CardTitle>
-          <CardDescription>
-            {onErrorHandler(attemptsQuery.error)}
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <StateCard
+        title="Failed to load results"
+        description={getErrorMessage(
+          attemptsQuery.error,
+          "Unable to load your quiz results.",
+        )}
+      />
     );
   }
 
   return (
     <section className="flex flex-col gap-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Quiz results</CardTitle>
-          <CardDescription>
-            Your previous quiz attempts are saved here after each submission.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <PageHeaderCard
+        title="Quiz results"
+        description="Your previous quiz attempts are saved here after each submission."
+      />
 
       <DataTable
         header={["Quiz", "Score", "Performance", "Date", "Action"]}

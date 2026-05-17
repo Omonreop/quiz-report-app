@@ -34,6 +34,19 @@ export type AttemptApiResponse = {
   correctCount: number;
   incorrectCount: number;
   createdAt: string;
+  categoryBreakdown: {
+    category: string;
+    correctCount: number;
+    totalCount: number;
+    score: number;
+    maxScore: number;
+    percentage: number;
+  }[];
+  insights: {
+    title: string;
+    description: string;
+    tone: string;
+  }[];
   answers: {
     questionId: string;
     question: string;

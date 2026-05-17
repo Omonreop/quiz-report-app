@@ -1,15 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { onErrorHandler } from "@/libs/axios/response-handler";
+import StateCard from "@/components/common/state-card";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { getErrorMessage } from "@/lib/error";
 import attemptServices from "@/services/attempt.service";
 import quizServices from "@/services/quiz.service";
 import {
@@ -18,11 +11,14 @@ import {
 } from "@/validations/quiz-validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
+import AttemptSummaryCard from "./attempt-summary-card";
+import ParticipantCard from "./participant-card";
 import QuestionCard from "./question-card";
+import QuizHeroCard from "./quiz-hero-card";
 
 async function fetchQuiz() {
   const { data } = await quizServices.getQuiz();
@@ -36,6 +32,8 @@ async function submitAttempt(payload: SubmitQuizPayload) {
 
 export default function Quiz() {
   const router = useRouter();
+  const isMobile = useIsMobile();
+
   const quizQuery = useQuery({
     queryKey: ["quiz"],
     queryFn: fetchQuiz,
@@ -49,10 +47,23 @@ export default function Quiz() {
     },
   });
 
+  const answers = useWatch({
+    control: form.control,
+    name: "answers",
+  });
+
   const submitMutation = useMutation({
     mutationFn: submitAttempt,
     onSuccess: (data) => {
       router.push(`/result/${data.attemptId}`);
+    },
+    onError: (error) => {
+      toast.error("Submit quiz failed", {
+        description: getErrorMessage(
+          error,
+          "Unable to submit your quiz. Please try again.",
+        ),
+      });
     },
   });
 
@@ -69,108 +80,86 @@ export default function Quiz() {
   }, [form, quizQuery.data]);
 
   if (quizQuery.isLoading) {
-    return (
-      <Card>
-        <CardContent className="flex min-h-60 items-center justify-center">
-          <Loader2 className="size-5 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
-    );
+    return <StateCard isLoading />;
   }
 
   if (quizQuery.isError || !quizQuery.data) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Failed to load quiz</CardTitle>
-          <CardDescription>
-            Please make sure the database is running and seeded.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <StateCard
+        title="Failed to load quiz"
+        description="Please make sure the database is running and seeded."
+      />
     );
   }
 
   const quiz = quizQuery.data;
+
+  const totalQuestions = quiz.questions.length;
+
+  const answeredCount = answers.filter(
+    (answer) => answer.selectedOptionId,
+  ).length;
+
+  const remainingCount = totalQuestions - answeredCount;
+  const isComplete = remainingCount === 0;
+
+  const progressValue =
+    totalQuestions > 0 ? Math.round((answeredCount / totalQuestions) * 100) : 0;
+
   const maxScore = quiz.questions.reduce(
     (total, question) => total + question.pointValue,
     0,
   );
 
+  const summaryCard = (
+    <AttemptSummaryCard
+      answeredCount={answeredCount}
+      totalQuestions={totalQuestions}
+      remainingCount={remainingCount}
+      maxScore={maxScore}
+      progressValue={progressValue}
+      isComplete={isComplete}
+      isSubmitting={submitMutation.isPending}
+    />
+  );
+
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <CardDescription>
-                {quiz.questions.length} questions
-              </CardDescription>
-              <CardTitle className="mt-1 text-3xl">{quiz.title}</CardTitle>
-              <CardDescription className="mt-2 max-w-2xl">
-                {quiz.description}
-              </CardDescription>
-            </div>
-            <div className="rounded-lg bg-muted px-3 py-2 text-sm font-medium">
-              {maxScore} max score
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
+    <form
+      className="space-y-6"
+      onSubmit={form.handleSubmit((payload) => submitMutation.mutate(payload))}
+    >
+      <QuizHeroCard
+        title={quiz.title}
+        description={quiz.description}
+        totalQuestions={totalQuestions}
+        maxScore={maxScore}
+        answeredCount={answeredCount}
+        progressValue={progressValue}
+      />
 
-      <form
-        className="flex flex-col gap-4"
-        onSubmit={form.handleSubmit((payload) =>
-          submitMutation.mutate(payload),
-        )}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle>Participant</CardTitle>
-            <CardDescription>
-              This information is used to save your quiz attempt.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <CardDescription>
-              Your account is used automatically for this attempt.
-            </CardDescription>
-          </CardContent>
-        </Card>
+      <input type="hidden" {...form.register("quizId")} />
 
-        <input type="hidden" {...form.register("quizId")} />
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="space-y-4">
+          <ParticipantCard />
 
-        {quiz.questions.map((question, index) => (
-          <QuestionCard
-            key={question.id}
-            index={index}
-            question={question}
-            control={form.control}
-            errors={form.formState.errors}
-          />
-        ))}
+          {quiz.questions.map((question, index) => (
+            <QuestionCard
+              key={question.id}
+              index={index}
+              question={question}
+              control={form.control}
+              errors={form.formState.errors}
+            />
+          ))}
+        </div>
 
-        {submitMutation.isError ? (
-          <Card className="border-destructive/40 text-destructive">
-            <CardContent>{onErrorHandler(submitMutation.error)}</CardContent>
-          </Card>
-        ) : null}
+        <aside className="hidden xl:sticky xl:top-24 xl:block xl:h-fit">
+          {summaryCard}
+        </aside>
+      </div>
 
-        <Card>
-          <CardFooter className="justify-end">
-            <Button type="submit" size="lg" disabled={submitMutation.isPending}>
-              {submitMutation.isPending ? (
-                <>
-                  <Loader2 className="animate-spin" />
-                  Submitting
-                </>
-              ) : (
-                "Submit quiz"
-              )}
-            </Button>
-          </CardFooter>
-        </Card>
-      </form>
-    </>
+      {isMobile ? summaryCard : null}
+    </form>
   );
 }

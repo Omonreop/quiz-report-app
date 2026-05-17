@@ -1,5 +1,5 @@
 import { getPublicQuiz } from "@/server/quiz";
-import { errorResponse, successResponse } from "@/libs/api-response";
+import { errorResponse, successResponse } from "@/lib/api-response";
 
 export async function GET() {
   const quiz = await getPublicQuiz();

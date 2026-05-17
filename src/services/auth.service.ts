@@ -1,4 +1,4 @@
-import instance from "@/libs/axios/instance";
+import instance from "@/lib/axios/instance";
 import { RegisterPayload } from "@/validations/auth-validation";
 
 const authServices = {
