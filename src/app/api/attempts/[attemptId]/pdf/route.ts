@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { pdf } from "@react-pdf/renderer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
+import { createElement } from "react";
 
 export const runtime = "nodejs";
 
@@ -25,11 +26,11 @@ async function streamToBuffer(stream: NodeJS.ReadableStream) {
 
 function createPdfFilename(name: string) {
   const sanitizedName = name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
+    .trim()
+    .replace(/[<>:"/\\|?*]+/g, "")
+    .replace(/\s+/g, " ");
 
-  return `quiz-result-${sanitizedName || "report"}.pdf`;
+  return `Quiz Result - ${sanitizedName || "Report"}.pdf`;
 }
 
 export async function GET(_request: NextRequest, context: RouteContext) {
@@ -46,9 +47,11 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     return NextResponse.json({ message: "Attempt not found" }, { status: 404 });
   }
 
-  const stream = await pdf(
-    <AttemptReportDocument attempt={attempt} />,
-  ).toBuffer();
+  const reportDocument = createElement(AttemptReportDocument, {
+    attempt,
+  }) as Parameters<typeof pdf>[0];
+
+  const stream = await pdf(reportDocument).toBuffer();
   const buffer = await streamToBuffer(stream);
 
   return new NextResponse(buffer, {

@@ -28,7 +28,6 @@ import {
 } from "lucide-react";
 import CategoryScoreChart from "./category-score-chart";
 import ScoreRadialChart from "./score-radial-chart";
-import Link from "next/link";
 import useResult from "../_hooks/use-result";
 
 function getPerformanceBadgeClass(category: string) {
@@ -85,8 +84,9 @@ export default function Result({ attemptId }: { attemptId: string }) {
         <div className="absolute -bottom-24 left-20 h-56 w-56 rounded-full bg-teal-500/10 blur-3xl" />
 
         <CardHeader className="relative p-6 md:p-8">
-          <div className="mb-8 flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-8 flex flex-col items-center gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
             <span>{formatReportDateTime(dataAttempt.createdAt)}</span>
+
             <span>Quiz Results - {dataAttempt.participant.name}</span>
           </div>
 
@@ -106,22 +106,9 @@ export default function Result({ attemptId }: { attemptId: string }) {
                   {formatCategoryLabel(dataAttempt.performanceCategory)}
                 </Badge>
 
-                <Badge className="border border-teal-500/20 bg-teal-500/10 text-teal-700 hover:bg-teal-500/15 dark:text-teal-300">
+                <Badge className="border border-teal-500/20 bg-teal-500/10 text-teal-700 dark:text-teal-300">
                   Quiz Result
                 </Badge>
-
-                <Link
-                  href={`/api/attempts/${dataAttempt.id}/pdf`}
-                  className={buttonVariants({
-                    variant: "outline",
-                    size: "sm",
-                    className:
-                      "border-teal-500/20 hover:bg-teal-500/10 hover:text-teal-700 dark:hover:text-teal-300",
-                  })}
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Export PDF
-                </Link>
               </div>
 
               <div className="space-y-3">
@@ -131,7 +118,8 @@ export default function Result({ attemptId }: { attemptId: string }) {
 
                 <CardDescription className="max-w-3xl text-base leading-7">
                   {dataAttempt.quiz.title} - {dataAttempt.answers.length}{" "}
-                  questions - Completed {formatReportDate(dataAttempt.createdAt)}
+                  questions - Completed{" "}
+                  {formatReportDate(dataAttempt.createdAt)}
                 </CardDescription>
               </div>
 
@@ -147,6 +135,19 @@ export default function Result({ attemptId }: { attemptId: string }) {
                 </span>
               </div>
             </div>
+          </div>
+          <div className="flex justify-end pt-2">
+            <a
+              href={`/api/attempts/${dataAttempt.id}/pdf`}
+              className={buttonVariants({
+                variant: "outline",
+                className:
+                  "gap-2 border-teal-500/20 bg-teal-500/10 text-teal-700 hover:bg-teal-500/15 hover:text-teal-800 dark:text-teal-300 dark:hover:text-teal-200",
+              })}
+            >
+              <Download className="h-4 w-4" />
+              Export PDF
+            </a>
           </div>
         </CardHeader>
       </Card>

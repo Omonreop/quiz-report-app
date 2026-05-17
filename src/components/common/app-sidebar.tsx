@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/sidebar";
 import { SIDEBAR_MENU_LIST } from "@/constants/sidebar-constant";
 import { cn } from "@/lib/utils";
-import { BookOpenCheck, EllipsisVertical, LogOut } from "lucide-react";
+import { Brain, EllipsisVertical, LogOut } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 
@@ -46,12 +46,16 @@ export default function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
+              className="hover:bg-teal-500/10"
               render={
-                <div className="font-semibold">
-                  <div className="bg-teal-500 flex p-2 items-center justify-center rounded-md ">
-                    <BookOpenCheck className="size-4" />
+                <div className="flex items-center gap-3">
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-teal-500/20 bg-teal-500/10 text-teal-700 dark:text-teal-300">
+                    <Brain className="size-4" />
                   </div>
-                  Quiz App
+
+                  <span className="font-bold tracking-tight group-data-[collapsible=icon]:hidden">
+                    Quiz App
+                  </span>
                 </div>
               }
             />
@@ -62,25 +66,34 @@ export default function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent className="flex flex-col gap-2">
             <SidebarMenu>
-              {SIDEBAR_MENU_LIST.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    tooltip={item.title}
-                    render={
-                      <a
-                        href={item.url}
-                        className={cn("px-4 py-3 h-auto", {
-                          "bg-teal-500 text-white hover:bg-teal-500":
-                            pathname === item.url,
-                        })}
-                      >
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </a>
-                    }
-                  />
-                </SidebarMenuItem>
-              ))}
+              {SIDEBAR_MENU_LIST.map((item) => {
+                const isActive = pathname === item.url;
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      tooltip={item.title}
+                      render={
+                        <a
+                          href={item.url}
+                          className={cn(
+                            "px-4 py-3 h-auto transition-colors",
+                            "hover:bg-teal-500/10 hover:text-teal-700",
+                            "dark:hover:bg-teal-500/10 dark:hover:text-teal-300",
+                            {
+                              "bg-linear-to-r from-teal-500/20 to-emerald-500/15 text-teal-700 ring-1 ring-teal-500/20 hover:bg-teal-500/15 dark:text-teal-300":
+                                isActive,
+                            },
+                          )}
+                        >
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </a>
+                      }
+                    />
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

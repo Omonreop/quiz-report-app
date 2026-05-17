@@ -1,5 +1,6 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
+import { environment } from "./config/environment";
 
 const AUTH_PAGES = ["/login", "/register"];
 const PROTECTED_PREFIXES = ["/dashboard", "/result"];
@@ -18,7 +19,7 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = await getToken({
     req: request,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: environment.NEXTAUTH_SECRET,
   });
 
   if (token && pathname === "/") {
