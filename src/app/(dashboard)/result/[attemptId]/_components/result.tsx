@@ -2,6 +2,7 @@
 
 import StateCard from "@/components/common/state-card";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -17,12 +18,14 @@ import {
   CheckCircle2,
   ClipboardList,
   Target,
+  Download,
   Trophy,
   Waves,
   XCircle,
 } from "lucide-react";
 import CategoryScoreChart from "./category-score-chart";
 import ScoreRadialChart from "./score-radial-chart";
+import Link from "next/link";
 
 async function fetchAttempt(attemptId: string) {
   const { data } = await attemptServices.getAttemptById(attemptId);
@@ -135,6 +138,19 @@ export default function Result({ attemptId }: { attemptId: string }) {
                 <Badge className="border border-teal-500/20 bg-teal-500/10 text-teal-700 hover:bg-teal-500/15 dark:text-teal-300">
                   Quiz Result
                 </Badge>
+
+                <Link
+                  href={`/api/attempts/${attempt.id}/pdf`}
+                  className={buttonVariants({
+                    variant: "outline",
+                    size: "sm",
+                    className:
+                      "border-teal-500/20 hover:bg-teal-500/10 hover:text-teal-700 dark:hover:text-teal-300",
+                  })}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Export PDF
+                </Link>
               </div>
 
               <div className="space-y-3">

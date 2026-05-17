@@ -154,7 +154,7 @@ export default function Quiz() {
           ))}
         </div>
 
-        <aside className="hidden xl:sticky xl:top-24 xl:block xl:h-fit">
+        <aside className="hidden md:sticky md:top-24 md:block md:h-fit">
           {summaryCard}
         </aside>
       </div>
