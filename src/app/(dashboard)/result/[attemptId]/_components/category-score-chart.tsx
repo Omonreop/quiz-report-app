@@ -3,8 +3,6 @@
 import {
   ChartConfig,
   ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
@@ -32,35 +30,38 @@ export default function CategoryScoreChart({
       color: "var(--chart-maximum)",
     },
   } satisfies ChartConfig;
+
   const chartData = data.map((category) => ({
     ...category,
     category: formatCategory(category.category),
   }));
+
   const chartMax = Math.max(...data.map((category) => category.maxScore), 1);
 
   return (
-    <ChartContainer config={chartConfig} className="min-h-72 w-full">
+    <ChartContainer config={chartConfig} className="h-52 w-full">
       <BarChart
         accessibilityLayer
         data={chartData}
-        margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
-        barGap={8}
+        margin={{ top: 8, right: 8, left: -24, bottom: 0 }}
+        barGap={6}
       >
         <CartesianGrid vertical={false} />
         <XAxis
           dataKey="category"
           tickLine={false}
-          tickMargin={10}
+          tickMargin={8}
           axisLine={false}
+          fontSize={12}
         />
         <YAxis
           domain={[0, chartMax]}
           allowDecimals={false}
           tickLine={false}
           axisLine={false}
+          fontSize={12}
         />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <ChartLegend content={<ChartLegendContent />} />
         <Bar dataKey="score" fill="var(--color-score)" radius={4} />
         <Bar dataKey="maxScore" fill="var(--color-maxScore)" radius={4} />
       </BarChart>

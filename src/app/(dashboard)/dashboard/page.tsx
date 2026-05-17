@@ -54,13 +54,13 @@ const quizCategories = [
 export default function DashboardPage() {
   return (
     <section className="space-y-6">
-      <div className="relative overflow-hidden rounded-3xl border border-teal-500/20 bg-gradient-to-br from-teal-500/20 via-background to-background p-6 shadow-sm md:p-8">
+      <div className="relative overflow-hidden rounded-3xl border border-teal-500/20 bg-linear-to-br from-teal-500/20 via-background to-background p-6 shadow-sm md:p-8">
         <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-teal-500/20 blur-3xl" />
         <div className="absolute -bottom-20 left-20 h-48 w-48 rounded-full bg-teal-500/10 blur-3xl" />
 
         <div className="relative grid gap-8 lg:grid-cols-[1.5fr_1fr] lg:items-center">
           <div className="space-y-5">
-            <Badge className="w-fit bg-teal-500/15 text-teal-300 hover:bg-teal-500/20">
+            <Badge className="w-fit bg-teal-500/15 text-teal-700 hover:bg-teal-500/20 dark:text-teal-300">
               General Knowledge Quiz
             </Badge>
 
@@ -92,7 +92,7 @@ export default function DashboardPage() {
                 className={buttonVariants({
                   variant: "outline",
                   className:
-                    "border-teal-500/30 hover:bg-teal-500/10 hover:text-teal-300",
+                    "border-teal-500/30 hover:bg-teal-500/10 hover:text-teal-700 dark:hover:text-teal-300",
                 })}
               >
                 View results
@@ -102,7 +102,7 @@ export default function DashboardPage() {
 
           <Card className="relative border-teal-500/20 bg-background/70 backdrop-blur">
             <CardHeader>
-              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-500/15 text-teal-300">
+              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-500/15 text-teal-700 dark:text-teal-300">
                 <Trophy className="h-6 w-6" />
               </div>
 
@@ -153,12 +153,12 @@ export default function DashboardPage() {
               >
                 <CardHeader>
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-500/15 text-teal-300">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-500/15 text-teal-700 dark:text-teal-300">
                       <Icon className="h-5 w-5" />
                     </div>
 
                     {category.available ? (
-                      <Badge className="bg-teal-500/15 text-teal-300 hover:bg-teal-500/20">
+                      <Badge className="bg-teal-500/15 text-teal-700 hover:bg-teal-500/20 dark:text-teal-300">
                         Available
                       </Badge>
                     ) : (
@@ -179,12 +179,16 @@ export default function DashboardPage() {
 
                 <CardContent>
                   {category.available ? (
-                    <Button className="w-full bg-teal-500 text-white hover:bg-teal-600">
-                      <Link href={category.href}>
-                        Start quiz
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
+                    <Link
+                      href={category.href}
+                      className={buttonVariants({
+                        className:
+                          "w-full bg-teal-500 text-white hover:bg-teal-600",
+                      })}
+                    >
+                      Start quiz
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
                   ) : (
                     <Button disabled variant="outline" className="w-full">
                       <Lock className="mr-2 h-4 w-4" />

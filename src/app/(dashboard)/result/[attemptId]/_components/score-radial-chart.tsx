@@ -19,36 +19,65 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function ScoreRadialChart({ percentage }: { percentage: number }) {
+export default function ScoreRadialChart({
+  percentage,
+  size = "default",
+}: {
+  percentage: number;
+  size?: "sm" | "default" | "lg";
+}) {
+  const safePercentage = Math.min(Math.max(percentage, 0), 100);
+
   const chartData = [
     {
       name: "score",
-      percentage,
+      percentage: safePercentage,
       fill: "var(--color-percentage)",
     },
   ];
 
+  const sizeClass = {
+    sm: "size-28",
+    default: "size-36",
+    lg: "size-44",
+  }[size];
+
+  const innerRadius = size === "lg" ? 54 : size === "sm" ? 36 : 44;
+  const outerRadius = size === "lg" ? 72 : size === "sm" ? 50 : 62;
+
   return (
-    <ChartContainer config={chartConfig} className="size-32">
-      <RadialBarChart
-        data={chartData}
-        startAngle={90}
-        endAngle={90 + (percentage / 100) * 360}
-        innerRadius={42}
-        outerRadius={58}
-      >
-        <PolarGrid
-          gridType="circle"
-          radialLines={false}
-          stroke="none"
-          className="first:fill-muted last:fill-card"
-          polarRadius={[58, 42]}
-        />
-        <RadialBar dataKey="percentage" background cornerRadius={10} />
-        <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
-          <Label
-            content={({ viewBox }) => {
-              if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+    <div className="relative flex items-center justify-center rounded-full bg-teal-500/5 p-2 ring-1 ring-teal-500/10">
+      <ChartContainer config={chartConfig} className={sizeClass}>
+        <RadialBarChart
+          data={chartData}
+          startAngle={90}
+          endAngle={90 - (safePercentage / 100) * 360}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius}
+        >
+          <PolarGrid
+            gridType="circle"
+            radialLines={false}
+            stroke="none"
+            className="first:fill-muted/70 last:fill-background"
+            polarRadius={[outerRadius, innerRadius]}
+          />
+
+          <RadialBar
+            dataKey="percentage"
+            background={{
+              fill: "var(--muted)",
+            }}
+            cornerRadius={999}
+          />
+
+          <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+            <Label
+              content={({ viewBox }) => {
+                if (!viewBox || !("cx" in viewBox) || !("cy" in viewBox)) {
+                  return null;
+                }
+
                 return (
                   <text
                     x={viewBox.cx}
@@ -58,25 +87,26 @@ export default function ScoreRadialChart({ percentage }: { percentage: number })
                   >
                     <tspan
                       x={viewBox.cx}
-                      y={viewBox.cy}
-                      className="fill-foreground text-3xl font-semibold"
+                      y={(viewBox.cy || 0) - 4}
+                      className="fill-foreground text-3xl font-bold"
                     >
-                      {percentage}%
+                      {safePercentage}%
                     </tspan>
+
                     <tspan
                       x={viewBox.cx}
-                      y={(viewBox.cy || 0) + 20}
-                      className="fill-muted-foreground text-xs"
+                      y={(viewBox.cy || 0) + 22}
+                      className="fill-muted-foreground text-xs font-medium"
                     >
                       score
                     </tspan>
                   </text>
                 );
-              }
-            }}
-          />
-        </PolarRadiusAxis>
-      </RadialBarChart>
-    </ChartContainer>
+              }}
+            />
+          </PolarRadiusAxis>
+        </RadialBarChart>
+      </ChartContainer>
+    </div>
   );
 }

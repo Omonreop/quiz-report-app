@@ -50,19 +50,25 @@ export default function QuizHeroCard({
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[360px]">
+          <div className="grid gap-3 sm:grid-cols-3 lg:min-w-90">
             <HeroMetric
-              icon={<HelpCircle className="mb-3 h-5 w-5 text-teal-700 dark:text-teal-300" />}
+              icon={
+                <HelpCircle className="mb-3 h-5 w-5 text-teal-700 dark:text-teal-300" />
+              }
               label="Questions"
               value={totalQuestions}
             />
             <HeroMetric
-              icon={<Trophy className="mb-3 h-5 w-5 text-teal-700 dark:text-teal-300" />}
+              icon={
+                <Trophy className="mb-3 h-5 w-5 text-teal-700 dark:text-teal-300" />
+              }
               label="Max score"
               value={maxScore}
             />
             <HeroMetric
-              icon={<CheckCircle2 className="mb-3 h-5 w-5 text-teal-700 dark:text-teal-300" />}
+              icon={
+                <CheckCircle2 className="mb-3 h-5 w-5 text-teal-700 dark:text-teal-300" />
+              }
               label="Answered"
               value={answeredCount}
             />

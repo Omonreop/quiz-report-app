@@ -30,7 +30,7 @@ export default function QuestionCard({
       <CardHeader className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-500/15 text-sm font-bold text-teal-300">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-500/15 text-sm font-bold text-teal-700 dark:text-teal-300">
               {String(index + 1).padStart(2, "0")}
             </div>
 
@@ -45,7 +45,7 @@ export default function QuestionCard({
             </div>
           </div>
 
-          <span className="w-fit rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-1 text-xs font-medium text-teal-300">
+          <span className="w-fit rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-1 text-xs font-medium text-teal-700 dark:text-teal-300">
             {question.category}
           </span>
         </div>
